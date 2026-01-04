@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusShare - Donate & Exchange</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            max-width: 1200px; margin: 0 auto; padding: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        header { 
+            background: white; padding: 20px; border-radius: 15px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 30px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+        }
+        h1 { color: #4CAF50; font-size: 2em; }
+        nav button { 
+            background: #4CAF50; color: white; border: none; 
+            padding: 12px 24px; border-radius: 25px; cursor: pointer; 
+            font-weight: bold; margin-left: 10px; transition: all 0.3s;
+        }
+        nav button:hover { background: #45a049; transform: translateY(-2px); }
+        .search-section {
+            background: white; padding: 25px; border-radius: 15px; 
+            margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .search-box {
+            display: flex; gap: 15px; max-width: 600px; margin: 0 auto;
+        }
+        #searchInput {
+            flex: 1; padding: 15px 20px; border: 2px solid #ddd; 
+            border-radius: 30px; font-size: 16px; outline: none;
+        }
+        #searchInput:focus { border-color: #4CAF50; }
+        #searchBtn {
+            background: linear-gradient(45deg, #4CAF50, #45a049); 
+            color: white; border: none; padding: 15px 30px; 
+            border-radius: 30px; font-weight: bold; cursor: pointer;
+            white-space: nowrap;
+        }
+        #searchBtn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(76,175,80,0.4); }
+        .search-results { margin-top: 10px; font-size: 14px; color: #666; text-align: center; }
+        .container { display: none; }
+        .container.active { display: block; }
+        #login-form { 
+            background: white; padding: 40px; border-radius: 15px; 
+            max-width: 400px; margin: 0 auto; box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
+        input, textarea { 
+            width: 100%; padding: 15px; border: 2px solid #ddd; 
+            border-radius: 10px; font-size: 16px; transition: border-color 0.3s;
+        }
+        input:focus, textarea:focus { outline: none; border-color: #4CAF50; }
+        .login-btn { 
+            width: 100%; background: linear-gradient(45deg, #4CAF50, #45a049); 
+            color: white; padding: 15px; border: none; border-radius: 10px; 
+            font-size: 18px; font-weight: bold; cursor: pointer;
+        }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(76,175,80,0.4); }
+        .verified { border-color: #4CAF50 !important; background: #f0f8f0; }
+        .stats { 
+            display: flex; justify-content: space-around; background: white; 
+            padding: 20px; border-radius: 15px; margin-bottom: 20px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .stat { text-align: center; }
+        .stat-number { font-size: 2.5em; font-weight: bold; color: #4CAF50; }
+        .listings { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        .item { 
+            background: white; border-radius: 15px; padding: 20px; 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1); transition: all 0.3s;
+        }
+        .item:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
+        .item img { width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 15px; }
+        .item h3 { color: #333; margin-bottom: 10px; }
+        .item .price { 
+            font-size: 1.5em; font-weight: bold; color: #4CAF50; 
+            background: #e8f5e8; padding: 8px 15px; border-radius: 20px; display: inline-block;
+        }
+        .item-actions { margin-top: 15px; display: flex; gap: 10px; }
+        .btn { 
+            flex: 1; padding: 12px; border: none; border-radius: 8px; 
+            cursor: pointer; font-weight: bold; transition: all 0.3s;
+        }
+        .btn-primary { background: #2196F3; color: white; }
+        .btn-success { background: #4CAF50; color: white; }
+        .btn:hover { transform: translateY(-2px); opacity: 0.9; }
+        .no-results {
+            grid-column: 1 / -1; text-align: center; padding: 60px 20px;
+            background: white; border-radius: 15px; color: #666;
+        }
+        .modal { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.8); z-index: 1000;
+        }
+        .modal-content { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%;
+        }
+        #message { padding: 20px; margin: 20px 0; border-radius: 10px; display: none; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .hidden { display: none; }
+        @media (max-width: 768px) {
+            .search-box { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🏫 CampusShare</h1>
+        <nav>
+            <button id="loginBtn" onclick="showLogin()">Login</button>
+            <button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
+            <button onclick="showListings()">🔍 Browse</button>
+            <button id="addBtn" class="hidden" onclick="showAddItem()">➕ List Item</button>
+        </nav>
+    </header>
+
+    <div id="login-container" class="container active">
+        <div id="login-form">
+            <h2>🔐 Quick Login</h2>
+            <p>Enter any email to start sharing!</p>
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" id="emailInput" placeholder="your.email@example.com" required>
+            </div>
+            <button class="login-btn" onclick="verifyEmail()">Login & Start Sharing</button>
+            <div id="message"></div>
+        </div>
+    </div>
+
+    <div id="main-container" class="container">
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number" id="totalItems">47</div>
+                <div>Items Shared</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="wasteSaved">2.3</div>
+                <div>Tons Waste Saved</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="users">128</div>
+                <div>Active Users</div>
+            </div>
+        </div>
+
+        <div id="listings-container">
+            <!-- ✅ SEARCH BAR WITH BUTTON -->
+            <div class="search-section">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Search textbooks, lamps, furniture..." 
+                           onkeyup="performSearch()">
+                    <button id="searchBtn" onclick="performSearch()">🔍 Search</button>
+                </div>
+                <div class="search-results" id="searchResults">Browse all items</div>
+            </div>
+
+            <div class="listings" id="listings"></div>
+        </div>
+
+        <div id="add-item-form" class="hidden">
+            <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.2);">
+                <h2>📦 List New Item</h2>
+                <div class="form-group">
+                    <label>Item Name:</label>
+                    <input type="text" id="itemName" placeholder="Old Textbook, Hostel Lamp etc.">
+                </div>
+                <div class="form-group">
+                    <label>Description:</label>
+                    <textarea id="itemDesc" rows="3" placeholder="Good condition, Calculus Vol 1..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Price:</label>
+                    <input type="text" id="itemPrice" placeholder="Free or ₹50">
+                </div>
+                <div class="form-group">
+                    <label>Photo (URL):</label>
+                    <input type="url" id="itemImage" placeholder="https://example.com/photo.jpg">
+                </div>
+                <button class="btn btn-success" onclick="addItem()" style="width:100%; padding:15px; font-size:18px;">Share Item</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div id="contactModal" class="modal">
+        <div class="modal-content">
+            <h3>Contact Donor</h3>
+            <p id="contactInfo"></p>
+            <button class="btn btn-primary" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // ✅ CORRECT PRODUCT-SPECIFIC IMAGES FOR EACH ITEM
+        let items = [
+            { 
+                id: 1, 
+                title: 'Calculus Textbook Vol 1', 
+                desc: 'Barely used, excellent condition', 
+                price: 'Free', 
+                image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
+                donor: 'Rahul S.', 
+                claimed: false 
+            },
+            { 
+                id: 2, 
+                title: 'Study Desk Lamp', 
+                desc: 'Working perfectly, USB charging', 
+                price: '₹100', 
+                image: 'https://images.unsplash.com/photo-1554261922-2742a7ecdd28?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                donor: 'Priya K.', 
+                claimed: false 
+            },
+            { 
+                id: 3, 
+                title: 'Old Hostel Mattress', 
+                desc: 'Good condition, clean', 
+                price: '₹500', 
+                image: 'https://images.unsplash.com/photo-1588880331179-46d541a819de?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                donor: 'Amit R.', 
+                claimed: false 
+            },
+            { 
+                id: 4, 
+                title: 'Physics Lab Notebook', 
+                desc: 'Complete notes, diagrams included', 
+                price: 'Free', 
+                image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                donor: 'Sneha P.', 
+                claimed: true 
+            },
+            { 
+                id: 5, 
+                title: 'Extension Board', 
+                desc: '6 sockets, surge protected', 
+                price: '₹150', 
+                image: 'https://images.unsplash.com/photo-1588098688809-089bf3354839?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                donor: 'Vikram S.', 
+                claimed: false 
+            },
+            { 
+                id: 6, 
+                title: 'Old Bed Sheet Set', 
+                desc: 'Clean, good quality cotton', 
+                price: '₹200', 
+                image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                donor: 'Neha G.', 
+                claimed: false 
+            },
+            { 
+                id: 7, 
+                title: 'Chemistry Reference Book', 
+                desc: 'Latest edition, highlighted', 
+                price: '₹50', 
+                image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd69?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                donor: 'Karan M.', 
+                claimed: false 
+            },
+            { 
+                id: 8, 
+                title: 'Old Study Chair', 
+                desc: 'Comfortable, good condition', 
+                price: '₹800', 
+                image: 'https://images.unsplash.com/photo-1550283420-33e325a3a639?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                donor: 'Riya D.', 
+                claimed: false 
+            },
+            { 
+                id: 9, 
+                title: 'Old Printer', 
+                desc: 'HP LaserJet, works perfectly', 
+                price: '₹1200', 
+                image: 'https://images.unsplash.com/photo-1585389715477-7c5f8b2f9a51?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                donor: 'Arjun P.', 
+                claimed: false 
+            },
+            { 
+                id: 10, 
+                title: 'Old Table Fan', 
+                desc: 'Good working condition, 3 speed settings', 
+                price: '₹300', 
+                image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                donor: 'Meera J.', 
+                claimed: false 
+            }
+        ];
+
+        let currentUser = null;
+        let totalItems = 47;
+        let wasteSaved = 2.3;
+        let users = 128;
+        let searchTerm = '';
+
+        function showLogin() {
+            document.getElementById('login-container').classList.add('active');
+            document.getElementById('main-container').classList.remove('active');
+        }
+
+        function showMain() {
+            document.getElementById('login-container').classList.remove('active');
+            document.getElementById('main-container').classList.add('active');
+            document.getElementById('loginBtn').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+            document.getElementById('addBtn').classList.remove('hidden');
+            renderListings();
+            updateStats();
+        }
+
+        function verifyEmail() {
+            const email = document.getElementById('emailInput').value.trim();
+            const messageEl = document.getElementById('message');
+            
+            if (!email || !email.includes('@')) {
+                showMessage('Please enter a valid email address', 'error');
+                return;
+            }
+
+            setTimeout(() => {
+                currentUser = { email, verified: true };
+                document.getElementById('emailInput').classList.add('verified');
+                showMessage(`✅ Welcome ${email.split('@')[0]}! You're logged in.`, 'success');
+                setTimeout(() => {
+                    showMain();
+                }, 1500);
+            }, 500);
+        }
+
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = type;
+            messageEl.style.display = 'block';
+            setTimeout(() => messageEl.style.display = 'none', 3000);
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginBtn').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            document.getElementById('addBtn').classList.add('hidden');
+            showLogin();
+        }
+
+        // 🔍 SEARCH FUNCTIONS
+        function performSearch() {
+            searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            renderListings();
+            updateSearchResults();
+        }
+
+        function updateSearchResults() {
+            const resultsEl = document.getElementById('searchResults');
+            const filteredCount = items.filter(item => 
+                !item.claimed && 
+                (searchTerm === '' || 
+                 item.title.toLowerCase().includes(searchTerm) || 
+                 item.desc.toLowerCase().includes(searchTerm))
+            ).length;
+            
+            resultsEl.textContent = searchTerm ? 
+                `✅ Found ${filteredCount} items for "${searchTerm}"` : 
+                `Browse all ${totalItems} available items`;
+        }
+
+        function showListings() {
+            document.getElementById('add-item-form').classList.add('hidden');
+            document.getElementById('listings-container').classList.remove('hidden');
+            document.getElementById('searchInput').focus();
+            renderListings();
+        }
+
+        function showAddItem() {
+            document.getElementById('listings-container').classList.add('hidden');
+            document.getElementById('add-item-form').classList.remove('hidden');
+        }
+
+        function renderListings() {
+            const filteredItems = items.filter(item => {
+                const matchesSearch = searchTerm === '' || 
+                    item.title.toLowerCase().includes(searchTerm) || 
+                    item.desc.toLowerCase().includes(searchTerm);
+                return matchesSearch && !item.claimed;
+            });
+
+            const listingsEl = document.getElementById('listings');
+            
+            if (filteredItems.length === 0) {
+                listingsEl.innerHTML = `
+                    <div class="no-results">
+                        <h3>🔍 No items found</h3>
+                        <p>Try different keywords like "mattress", "fan", "textbook", "lamp"</p>
+                        <button class="btn btn-primary" onclick="clearSearch()">Clear Search</button>
+                    </div>
+                `;
+            } else {
+                listingsEl.innerHTML = filteredItems.map(item => `
+                    <div class="item">
+                        <img src="${item.image}" alt="${item.title}" 
+                             onerror="this.src='https://via.placeholder.com/350x200/4CAF50/ffffff?text=${encodeURIComponent(item.title)}'">
+                        <h3>${item.title}</h3>
+                        <p>${item.desc}</p>
+                        <div class="price">${item.price}</div>
+                        <p><strong>By:</strong> ${item.donor} ✅</p>
+                        <div class="item-actions">
+                            <button class="btn btn-primary" onclick="contactDonor(${item.id})">Contact</button>
+                            <button class="btn btn-success" onclick="claimItem(${item.id})">
+                                Claim Now
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            updateSearchResults();
+        }
+
+        function clearSearch() {
+            searchTerm = '';
+            document.getElementById('searchInput').value = '';
+            renderListings();
+        }
+
+        function contactDonor(id) {
+            const item = items.find(i => i.id === id);
+            if (!currentUser) {
+                alert('Please login first!');
+                return;
+            }
+            document.getElementById('contactInfo').innerHTML = `
+                <p><strong>${item.donor}</strong></p>
+                <p>📧 Your email: ${currentUser.email}</p>
+                <p>💬 Suggested message: "Hi, interested in your ${item.title}"</p>
+            `;
+            document.getElementById('contactModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('contactModal').style.display = 'none';
+        }
+
+        function claimItem(id) {
+            if (!currentUser) {
+                alert('Please login first!');
+                return;
+            }
+            const item = items.find(i => i.id === id);
+            item.claimed = true;
+            totalItems++;
+            wasteSaved += 0.05;
+            users++;
+            renderListings();
+            updateStats();
+            alert(`🎉 ${item.title} claimed successfully!\nThank you for reusing! ♻️`);
+        }
+
+        function addItem() {
+            if (!currentUser) {
+                alert('Please login first!');
+                return;
+            }
+            const name = document.getElementById('itemName').value.trim();
+            const desc = document.getElementById('itemDesc').value.trim();
+            const price = document.getElementById('itemPrice').value.trim() || 'Free';
+            const image = document.getElementById('itemImage').value.trim() || 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
+
+            if (!name || !desc) {
+                alert('Please fill item name and description');
+                return;
+            }
+
+            const newItem = {
+                id: Date.now(),
+                title: name,
+                desc: desc,
+                price: price,
+                image: image,
+                donor: currentUser.email.split('@')[0] || 'Student',
+                claimed: false
+            };
+
+            items.unshift(newItem);
+            totalItems++;
+            wasteSaved += 0.03;
+
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemDesc').value = '';
+            document.getElementById('itemPrice').value = '';
+            document.getElementById('itemImage').value = '';
+
+            alert('✅ Item listed successfully! Thank you for sharing ♻️');
+            setTimeout(() => {
+                showListings();
+                renderListings();
+                updateStats();
+            }, 500);
+        }
+
+        function updateStats() {
+            document.getElementById('totalItems').textContent = totalItems;
+            document.getElementById('wasteSaved').textContent = wasteSaved.toFixed(1);
+            document.getElementById('users').textContent = users;
+        }
+
+        // Event listeners
+        window.onclick = function(event) {
+            const modal = document.getElementById('contactModal');
+            if (event.target === modal) closeModal();
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') closeModal();
+        });
+
+        document.getElementById('emailInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') verifyEmail();
+        });
+
+        // Initialize
+        updateStats();
+        console.log('✅ CampusShare with CORRECT PRODUCT IMAGES ready!');
+    </script>
+</body>
+</html>
