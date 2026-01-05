@@ -2,73 +2,141 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>CampusShare</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CampusShare – Donate & Exchange</title>
 
 <style>
+*{margin:0;padding:0;box-sizing:border-box}
 body{
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg,#667eea,#764ba2);
+    font-family:Segoe UI,Tahoma;
+    background:linear-gradient(135deg,#667eea,#764ba2);
+    min-height:100vh;
     padding:20px;
-    max-width:1200px;
-    margin:auto;
 }
 header{
-    background:white;
-    padding:15px;
-    border-radius:12px;
+    background:#fff;
+    padding:20px;
+    border-radius:15px;
     display:flex;
     justify-content:space-between;
     align-items:center;
     margin-bottom:20px;
 }
+h1{color:#4CAF50}
+
 button{
-    padding:8px 14px;
     border:none;
-    border-radius:8px;
+    padding:10px 18px;
+    border-radius:20px;
     cursor:pointer;
     font-weight:bold;
 }
-.green{background:#4CAF50;color:white;}
-.blue{background:#2196F3;color:white;}
-.orange{background:#FF9800;color:white;}
-.hidden{display:none;}
+.btn-primary{background:#2196F3;color:#fff}
+.btn-success{background:#4CAF50;color:#fff}
+.hidden{display:none}
 
-.grid{
+.container{display:none}
+.container.active{display:block}
+
+.stats{
+    display:flex;
+    justify-content:space-around;
+    background:#fff;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:20px;
+}
+.stat-number{font-size:2em;color:#4CAF50;font-weight:bold}
+
+.search-section{
+    background:#fff;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:20px;
+}
+.search-box{display:flex;gap:10px}
+.search-box input{
+    flex:1;
+    padding:12px;
+    border-radius:20px;
+    border:2px solid #ddd;
+}
+
+.listings{
     display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
     gap:20px;
 }
-.card{
-    background:white;
+.item{
+    background:#fff;
     padding:15px;
-    border-radius:12px;
+    border-radius:15px;
 }
-.card img{
+.item img{
     width:100%;
     height:180px;
     object-fit:cover;
     border-radius:10px;
 }
+.price{
+    background:#e8f5e8;
+    display:inline-block;
+    padding:5px 12px;
+    border-radius:15px;
+    color:#4CAF50;
+    font-weight:bold;
+}
+
+/* CHAT MODAL */
 .modal{
-    position:fixed;
-    top:0;left:0;
-    width:100%;height:100%;
-    background:rgba(0,0,0,0.6);
     display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.8);
 }
 .modal-content{
-    background:white;
-    padding:20px;
-    border-radius:12px;
+    background:#fff;
     width:90%;
-    max-width:400px;
-    margin:10% auto;
+    max-width:500px;
+    padding:20px;
+    border-radius:15px;
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
 }
-input,textarea{
-    width:100%;
+
+.chat-box{
+    height:250px;
+    overflow:auto;
+    border:1px solid #ddd;
     padding:10px;
     margin-bottom:10px;
+}
+.chat-msg{
+    margin-bottom:8px;
+    padding:8px 12px;
+    border-radius:10px;
+}
+.chat-user{
+    background:#e8f5e8;
+    text-align:right;
+}
+.chat-other{
+    background:#f1f1f1;
+}
+
+/* GLOBAL CHAT BUTTON */
+#globalChatBtn{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:#2196F3;
+    color:white;
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    font-size:26px;
 }
 </style>
 </head>
@@ -76,143 +144,165 @@ input,textarea{
 <body>
 
 <header>
-<h2>🏫 CampusShare</h2>
+<h1>🏫 CampusShare</h1>
 <div>
-<button class="green" onclick="showLogin()">Login</button>
-<button class="green hidden" id="logoutBtn" onclick="logout()">Logout</button>
-<button class="blue" onclick="showListings()">Browse</button>
-<button class="green hidden" id="addBtn" onclick="showAddForm()">List Item</button>
+<button id="loginBtn" onclick="showLogin()">Login</button>
+<button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
 </div>
 </header>
 
 <!-- LOGIN -->
-<div id="loginBox">
-<div class="card" style="max-width:400px;margin:auto;">
-<h3>Login</h3>
-<input type="email" id="emailInput" placeholder="email@example.com">
-<button class="green" onclick="login()">Login</button>
-</div>
+<div id="login-container" class="container active">
+    <div class="modal-content">
+        <h2>Quick Login</h2>
+        <input id="emailInput" placeholder="email@example.com" style="width:100%;padding:12px;margin:10px 0">
+        <button class="btn-success" style="width:100%" onclick="login()">Login</button>
+    </div>
 </div>
 
 <!-- MAIN -->
-<div id="mainBox" class="hidden">
-<div id="listings" class="grid"></div>
+<div id="main-container" class="container">
+    <div class="stats">
+        <div><div class="stat-number">47</div>Items Shared</div>
+        <div><div class="stat-number">2.3</div>Tons Saved</div>
+        <div><div class="stat-number">128</div>Users</div>
+    </div>
 
-<div id="addForm" class="hidden card" style="margin-top:20px;">
-<h3>Add Item</h3>
-<input id="name" placeholder="Item name">
-<textarea id="desc" placeholder="Description"></textarea>
-<input id="price" placeholder="Price or Free">
-<input id="image" placeholder="Image URL">
-<input id="phone" placeholder="Phone">
-<input id="email" placeholder="Email">
-<button class="green" onclick="addItem()">Add</button>
-</div>
-</div>
+    <div class="search-section">
+        <div class="search-box">
+            <input id="searchInput" placeholder="Search items..." onkeyup="renderItems()">
+            <button class="btn-primary" onclick="renderItems()">Search</button>
+        </div>
+    </div>
 
-<!-- CONTACT MODAL -->
-<div id="contactModal" class="modal">
-<div class="modal-content">
-<div id="contactText"></div>
-<button class="blue" onclick="closeContact()">Close</button>
-</div>
+    <div class="listings" id="listings"></div>
 </div>
 
-<!-- PORTER MODAL -->
-<div id="porterModal" class="modal">
-<div class="modal-content">
-<h3>🚚 Porter Request</h3>
-<input placeholder="Pickup location">
-<input placeholder="Drop location">
-<input placeholder="Approx weight (kg)">
-<button class="orange" onclick="confirmPorter()">Confirm</button>
-<button class="blue" onclick="closePorter()">Cancel</button>
+<!-- ITEM CHAT -->
+<div id="itemChatModal" class="modal">
+    <div class="modal-content">
+        <h3>Item Chat</h3>
+        <div id="itemChatBox" class="chat-box"></div>
+        <div style="display:flex;gap:8px">
+            <input id="itemChatInput" style="flex:1;padding:10px" placeholder="Message...">
+            <button class="btn-success" onclick="sendItemMessage()">Send</button>
+        </div>
+        <button class="btn-primary" style="margin-top:10px" onclick="closeItemChat()">Close</button>
+    </div>
 </div>
+
+<!-- GLOBAL USER CHAT -->
+<div id="globalChatModal" class="modal">
+    <div class="modal-content">
+        <h3>👥 Campus Chat</h3>
+        <div id="globalChatBox" class="chat-box"></div>
+        <div style="display:flex;gap:8px">
+            <input id="globalChatInput" style="flex:1;padding:10px" placeholder="Message everyone...">
+            <button class="btn-success" onclick="sendGlobalMessage()">Send</button>
+        </div>
+        <button class="btn-primary" style="margin-top:10px" onclick="closeGlobalChat()">Close</button>
+    </div>
 </div>
+
+<button id="globalChatBtn" onclick="openGlobalChat()">💬</button>
 
 <script>
 let currentUser=null;
-let selectedItem=null;
+let activeItem=null;
 
-let items=[
-{id:1,title:"Study Chair",desc:"Good condition",price:"₹800",image:"https://images.unsplash.com/photo-1550283420-33e325a3a639",donor:"Amit",contact:{phone:"9876543210",email:"amit@mail.com"},claimed:false},
-{id:2,title:"Old Mattress",desc:"Clean and usable",price:"₹500",image:"https://images.unsplash.com/photo-1588880331179-46d541a819de",donor:"Neha",contact:{phone:"9123456789",email:"neha@mail.com"},claimed:false},
-{id:3,title:"Table Fan",desc:"Working perfectly",price:"₹300",image:"https://images.unsplash.com/photo-1600585154340-be6161a56a0c",donor:"Rahul",contact:{phone:"9988776655",email:"rahul@mail.com"},claimed:false},
-{id:4,title:"Single Bed Frame",desc:"Metal frame",price:"₹1200",image:"https://images.unsplash.com/photo-1505691938895-1758d7feb511",donor:"Kunal",contact:{phone:"9000011111",email:"kunal@mail.com"},claimed:false},
-{id:5,title:"Bookshelf",desc:"4 shelves",price:"₹700",image:"https://images.unsplash.com/photo-1582582429416-56d59c2f34c4",donor:"Riya",contact:{phone:"9000022222",email:"riya@mail.com"},claimed:false},
-{id:6,title:"Laptop Table",desc:"Foldable",price:"₹400",image:"https://images.unsplash.com/photo-1616627983541-7c9c0ed912d7",donor:"Ankit",contact:{phone:"9000033333",email:"ankit@mail.com"},claimed:false},
-{id:7,title:"Electric Kettle",desc:"Barely used",price:"₹350",image:"https://images.unsplash.com/photo-1607082349566-1870a1f2d4a1",donor:"Sneha",contact:{phone:"9000044444",email:"sneha@mail.com"},claimed:false},
-{id:8,title:"Office Chair",desc:"Adjustable",price:"₹1000",image:"https://images.unsplash.com/photo-1592078615290-033ee584e267",donor:"Arjun",contact:{phone:"9000055555",email:"arjun@mail.com"},claimed:false},
-{id:9,title:"Study Lamp",desc:"LED",price:"₹250",image:"https://images.unsplash.com/photo-1507473885765-e6ed057f782c",donor:"Pooja",contact:{phone:"9000066666",email:"pooja@mail.com"},claimed:false},
-{id:10,title:"Cycle",desc:"Needs repair",price:"₹1800",image:"https://images.unsplash.com/photo-1485965120184-e220f721d03e",donor:"Sahil",contact:{phone:"9000077777",email:"sahil@mail.com"},claimed:false},
-{id:11,title:"Whiteboard",desc:"Medium size",price:"₹300",image:"https://images.unsplash.com/photo-1584697964193-5f4fdd07f0a3",donor:"Isha",contact:{phone:"9000088888",email:"isha@mail.com"},claimed:false},
-{id:12,title:"Clothes Rack",desc:"Portable",price:"₹450",image:"https://images.unsplash.com/photo-1616627457212-bc7a7c8a4b51",donor:"Mohit",contact:{phone:"9000099999",email:"mohit@mail.com"},claimed:false},
-{id:13,title:"Rice Cooker",desc:"Working",price:"₹900",image:"https://images.unsplash.com/photo-1604908177522-937ab1c3c8a5",donor:"Tanvi",contact:{phone:"9111100000",email:"tanvi@mail.com"},claimed:false},
-{id:14,title:"Bedside Table",desc:"Compact",price:"₹350",image:"https://images.unsplash.com/photo-1586023492125-27b2c045efd7",donor:"Rohit",contact:{phone:"9222200000",email:"rohit@mail.com"},claimed:false},
-{id:15,title:"Room Heater",desc:"Winter use",price:"₹1100",image:"https://images.unsplash.com/photo-1545259741-2ea3ebf61fa3",donor:"Meera",contact:{phone:"9333300000",email:"meera@mail.com"},claimed:false},
-{id:16,title:"Shoe Rack",desc:"Lightweight",price:"₹300",image:"https://images.unsplash.com/photo-1600585152915-d208bec867a1",donor:"Nikhil",contact:{phone:"9444400000",email:"nikhil@mail.com"},claimed:false},
-{id:17,title:"Wall Clock",desc:"Silent",price:"₹200",image:"https://images.unsplash.com/photo-1509228627152-72ae9ae6848b",donor:"Ayesha",contact:{phone:"9555500000",email:"ayesha@mail.com"},claimed:false},
-{id:18,title:"Iron Press",desc:"Heavy duty",price:"₹600",image:"https://images.unsplash.com/photo-1581579185169-7e9a2f91b1c3",donor:"Varun",contact:{phone:"9666600000",email:"varun@mail.com"},claimed:false}
+const items=[
+{id:1,title:"Calculus Book",desc:"Good condition",price:"Free",img:"https://images.unsplash.com/photo-1523050854058-8df90110c9f1",donor:"Rahul"},
+{id:2,title:"Study Lamp",desc:"USB lamp",price:"₹100",img:"https://images.unsplash.com/photo-1554261922-2742a7ecdd28",donor:"Priya"},
+{id:3,title:"Table Fan",desc:"Working",price:"₹300",img:"https://images.unsplash.com/photo-1600585154340-be6161a56a0c",donor:"Meera"}
 ];
 
+let itemChats={};
+let globalChat=[];
+
+/* LOGIN */
 function showLogin(){
-document.getElementById("loginBox").classList.remove("hidden");
-document.getElementById("mainBox").classList.add("hidden");
+    document.getElementById("login-container").classList.add("active");
+    document.getElementById("main-container").classList.remove("active");
 }
-
 function login(){
-const email=document.getElementById("emailInput").value;
-if(!email.includes("@")){alert("Invalid email");return;}
-currentUser={email};
-document.getElementById("loginBox").classList.add("hidden");
-document.getElementById("mainBox").classList.remove("hidden");
-document.getElementById("logoutBtn").classList.remove("hidden");
-document.getElementById("addBtn").classList.remove("hidden");
-render();
+    const email=document.getElementById("emailInput").value;
+    if(!email.includes("@")) return alert("Invalid email");
+    currentUser=email;
+    document.getElementById("login-container").classList.remove("active");
+    document.getElementById("main-container").classList.add("active");
+    document.getElementById("loginBtn").classList.add("hidden");
+    document.getElementById("logoutBtn").classList.remove("hidden");
+    renderItems();
+}
+function logout(){location.reload()}
+
+/* ITEMS */
+function renderItems(){
+    const q=document.getElementById("searchInput").value.toLowerCase();
+    const box=document.getElementById("listings");
+    box.innerHTML="";
+    items.filter(i=>i.title.toLowerCase().includes(q))
+    .forEach(i=>{
+        box.innerHTML+=`
+        <div class="item">
+            <img src="${i.img}">
+            <h3>${i.title}</h3>
+            <p>${i.desc}</p>
+            <div class="price">${i.price}</div>
+            <p>By ${i.donor}</p>
+            <button class="btn-primary" onclick="openItemChat(${i.id})">Chat</button>
+        </div>`;
+    });
 }
 
-function logout(){currentUser=null;showLogin();}
-function showListings(){document.getElementById("addForm").classList.add("hidden");render();}
-function showAddForm(){document.getElementById("addForm").classList.remove("hidden");}
-
-function render(){
-document.getElementById("listings").innerHTML=items.filter(i=>!i.claimed).map(i=>`
-<div class="card">
-<img src="${i.image}">
-<h4>${i.title}</h4>
-<p>${i.desc}</p>
-<b>${i.price}</b>
-<p>📞 ${i.contact.phone}</p>
-<p>📧 ${i.contact.email}</p>
-<button class="blue" onclick="contact(${i.id})">Contact</button>
-<button class="orange" onclick="porter(${i.id})">Porter</button>
-<button class="green" onclick="claim(${i.id})">Claim</button>
-</div>`).join("");
+/* ITEM CHAT */
+function openItemChat(id){
+    activeItem=id;
+    if(!itemChats[id]) itemChats[id]=[];
+    renderItemChat();
+    document.getElementById("itemChatModal").style.display="block";
+}
+function closeItemChat(){
+    document.getElementById("itemChatModal").style.display="none";
+}
+function sendItemMessage(){
+    const msg=document.getElementById("itemChatInput").value;
+    if(!msg) return;
+    itemChats[activeItem].push({user:currentUser,text:msg});
+    document.getElementById("itemChatInput").value="";
+    renderItemChat();
+}
+function renderItemChat(){
+    const box=document.getElementById("itemChatBox");
+    box.innerHTML="";
+    itemChats[activeItem].forEach(m=>{
+        box.innerHTML+=`<div class="chat-msg ${m.user===currentUser?'chat-user':'chat-other'}">${m.user.split("@")[0]}: ${m.text}</div>`;
+    });
+    box.scrollTop=box.scrollHeight;
 }
 
-function contact(id){
-const i=items.find(x=>x.id===id);
-document.getElementById("contactText").innerHTML=`<b>${i.donor}</b><br>${i.contact.phone}<br>${i.contact.email}`;
-document.getElementById("contactModal").style.display="block";
+/* GLOBAL CHAT */
+function openGlobalChat(){
+    renderGlobalChat();
+    document.getElementById("globalChatModal").style.display="block";
 }
-function closeContact(){document.getElementById("contactModal").style.display="none";}
-function porter(id){selectedItem=id;document.getElementById("porterModal").style.display="block";}
-function closePorter(){document.getElementById("porterModal").style.display="none";}
-function confirmPorter(){alert("🚚 Porter booked");closePorter();}
-function claim(id){items.find(x=>x.id===id).claimed=true;render();}
-
-function addItem(){
-items.unshift({
-id:Date.now(),
-title:name.value,
-desc:desc.value,
-price:price.value||"Free",
-image:image.value,
-donor:currentUser.email.split("@")[0],
-contact:{phone:phone.value,email:email.value},
-claimed:false
-});
-render();
+function closeGlobalChat(){
+    document.getElementById("globalChatModal").style.display="none";
+}
+function sendGlobalMessage(){
+    const msg=document.getElementById("globalChatInput").value;
+    if(!msg) return;
+    globalChat.push({user:currentUser,text:msg});
+    document.getElementById("globalChatInput").value="";
+    renderGlobalChat();
+}
+function renderGlobalChat(){
+    const box=document.getElementById("globalChatBox");
+    box.innerHTML="";
+    globalChat.forEach(m=>{
+        box.innerHTML+=`<div class="chat-msg ${m.user===currentUser?'chat-user':'chat-other'}">${m.user.split("@")[0]}: ${m.text}</div>`;
+    });
+    box.scrollTop=box.scrollHeight;
 }
 </script>
 
